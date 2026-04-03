@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RevOps Book Balancer</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <h1>RevOps Book Balancer</h1>
+            <p class="subtitle">Strategic Account Structure Planning Tool</p>
+        </div>
+    </header>
+
+    <main>
+        <!-- Step 1: Configure Weights -->
+        <section id="weights-section" class="card">
+            <div class="card-header">
+                <span class="step-badge">1</span>
+                <h2>Configure Balancing Weights</h2>
+                <p class="card-desc">Adjust the importance of each indicator before uploading your data. Higher weight = more influence on rebalancing decisions.</p>
+            </div>
+            <div class="weights-grid">
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">ARR Balance</span>
+                        <span class="weight-value" id="w-arr-val">50</span>
+                    </div>
+                    <input type="range" id="w-arr" min="0" max="100" value="50" class="slider">
+                    <p class="weight-desc">Equalize total revenue across books within each segment</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Whitespace (TAM Opportunity)</span>
+                        <span class="weight-value" id="w-whitespace-val">50</span>
+                    </div>
+                    <input type="range" id="w-whitespace" min="0" max="100" value="50" class="slider">
+                    <p class="weight-desc">Equalize expansion opportunity across AM books</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Renewal Balance</span>
+                        <span class="weight-value" id="w-renewal-val">50</span>
+                    </div>
+                    <input type="range" id="w-renewal" min="0" max="100" value="50" class="slider">
+                    <p class="weight-desc">No book should have concentrated renewals in any single month/quarter</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Product Adoption Depth</span>
+                        <span class="weight-value" id="w-adoption-val">30</span>
+                    </div>
+                    <input type="range" id="w-adoption" min="0" max="100" value="30" class="slider">
+                    <p class="weight-desc">Balance mix of single-product vs multi-product customers</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Parent-Child Concentration</span>
+                        <span class="weight-value" id="w-parent-val">70</span>
+                    </div>
+                    <input type="range" id="w-parent" min="0" max="100" value="70" class="slider">
+                    <p class="weight-desc">Keep parent + child accounts together under same CSM/AM</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Geo Coverage</span>
+                        <span class="weight-value" id="w-geo-val">40</span>
+                    </div>
+                    <input type="range" id="w-geo" min="0" max="100" value="40" class="slider">
+                    <p class="weight-desc">International accounts need geo-specific CSM/AM coverage</p>
+                </div>
+                <div class="weight-control">
+                    <div class="weight-label">
+                        <span class="weight-name">Health Score Balance</span>
+                        <span class="weight-value" id="w-health-val">40</span>
+                    </div>
+                    <input type="range" id="w-health" min="0" max="100" value="40" class="slider">
+                    <p class="weight-desc">No book should be overloaded with at-risk accounts</p>
+                </div>
+            </div>
+            <div class="segment-config">
+                <h3>Segment Rules</h3>
+                <div class="segment-rules-grid">
+                    <div class="segment-rule">
+                        <h4>Enterprise & Strategic</h4>
+                        <p class="rule-desc">CS Segments: Enterprise, Enterprise Plus, Strategic</p>
+                        <label>Target CSM Book Size (accounts)
+                            <input type="number" id="ent-csm-book" value="15" min="1" max="100">
+                        </label>
+                        <label>Target AM Book Size (accounts)
+                            <input type="number" id="ent-am-book" value="20" min="1" max="100">
+                        </label>
+                    </div>
+                    <div class="segment-rule">
+                        <h4>Mid-Market & SMB</h4>
+                        <p class="rule-desc">CS Segments: Mid-Market, SMB, New Verticals</p>
+                        <label>Target CSM Book Size (accounts)
+                            <input type="number" id="mm-csm-book" value="35" min="1" max="200">
+                        </label>
+                        <label>Target AM Book Size (accounts)
+                            <input type="number" id="mm-am-book" value="40" min="1" max="200">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: Upload -->
+        <section id="upload-section" class="card">
+            <div class="card-header">
+                <span class="step-badge">2</span>
+                <h2>Upload Account Data</h2>
+            </div>
+            <div class="upload-zone" id="drop-zone">
+                <div class="upload-icon">&#8593;</div>
+                <p>Drag & drop your CSV file here, or <label for="file-input" class="file-label">browse</label></p>
+                <input type="file" id="file-input" accept=".csv" hidden>
+                <p class="upload-hint">Expected columns: Parent Account ID, Account ID, Account Type, Renewal Date, Customer Tier, Total L12M Revenue, Total Estimated Whitespace, Country Code, Uses SMS, Uses Email, Uses AI, CS Segment, CSM ID, Sales Owner Type, Account Management Segment, Sales Owner ID, Health Score</p>
+            </div>
+            <div id="upload-status" class="hidden">
+                <div class="status-bar success">
+                    <span id="upload-msg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Current State Analysis -->
+        <section id="analysis-section" class="card hidden">
+            <div class="card-header">
+                <span class="step-badge">3</span>
+                <h2>Current State Analysis</h2>
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="overview">Overview</button>
+                <button class="tab" data-tab="csm-detail">CSM Books</button>
+                <button class="tab" data-tab="am-detail">AM Books</button>
+                <button class="tab" data-tab="renewal-view">Renewal Distribution</button>
+                <button class="tab" data-tab="geo-view">Geo Coverage</button>
+            </div>
+            <div id="tab-overview" class="tab-content active">
+                <div class="metrics-row" id="overview-metrics"></div>
+                <div class="charts-row">
+                    <div class="chart-container"><canvas id="chart-csm-arr"></canvas></div>
+                    <div class="chart-container"><canvas id="chart-am-arr"></canvas></div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container"><canvas id="chart-csm-health"></canvas></div>
+                    <div class="chart-container"><canvas id="chart-am-whitespace"></canvas></div>
+                </div>
+                <div id="imbalance-flags" class="flags-container"></div>
+            </div>
+            <div id="tab-csm-detail" class="tab-content">
+                <div id="csm-table-wrap"></div>
+            </div>
+            <div id="tab-am-detail" class="tab-content">
+                <div id="am-table-wrap"></div>
+            </div>
+            <div id="tab-renewal-view" class="tab-content">
+                <div class="charts-row">
+                    <div class="chart-container wide"><canvas id="chart-renewal-heatmap"></canvas></div>
+                </div>
+                <div id="renewal-flags"></div>
+            </div>
+            <div id="tab-geo-view" class="tab-content">
+                <div id="geo-summary"></div>
+            </div>
+            <button id="rebalance-btn" class="btn-primary">Run Rebalancing Algorithm</button>
+        </section>
+
+        <!-- Step 4: Proposed Changes -->
+        <section id="results-section" class="card hidden">
+            <div class="card-header">
+                <span class="step-badge">4</span>
+                <h2>Proposed Rebalancing</h2>
+            </div>
+            <div class="results-summary" id="results-summary"></div>
+            <div class="charts-row">
+                <div class="chart-container"><canvas id="chart-before-after-arr"></canvas></div>
+                <div class="chart-container"><canvas id="chart-before-after-health"></canvas></div>
+            </div>
+            <div id="changes-table-wrap"></div>
+            <div class="export-controls">
+                <button id="export-full-btn" class="btn-primary">Export Full Roster CSV</button>
+                <button id="export-changes-btn" class="btn-secondary">Export Changes Only CSV</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

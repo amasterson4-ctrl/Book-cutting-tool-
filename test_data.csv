@@ -1,0 +1,31 @@
+Parent Account ID,Account ID,Account Type,Renewal Date,Customer Tier,Total L12M Revenue,Total Estimated Whitespace,Country Code,Uses SMS,Uses Email,Uses AI,CS Segment,CSM ID,Sales Owner Type,Account Management Segment,Sales Owner ID,Health Score
+0011K000022F7weQAC,0011K000022F7weQAC,Existing Customer,2027-03-31,Tier 2,"$290,182","$60,890",US,Yes,Yes,Yes,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,25%
+0011K000022H8rcQAC,0011K000022H8rcQAC,Existing Customer,2026-04-30,Tier 0,"$913,761","$609,000",US,Yes,No,Yes,CS - Enterprise Plus,CSM-159,Expansion AM/AD,AM - Enterprise,AM-026,100%
+0011K000024bPvHQAU,0011K000024bPvHQAU,Existing Customer,2026-05-31,Tier 3,"$98,342","$76,075",US,Yes,No,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,100%
+0011K000024bPvSQAU,0011K000024bPvSQAU,Existing Customer,2026-11-30,Tier 1,"$281,888","$0",US,Yes,Yes,Yes,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,50%
+0011K000024bPvSQAU,0011K00002KXRnQAE,Existing Customer,2026-11-30,Tier 3,"$92,950","$6,377",US,Yes,Yes,Yes,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,75%
+0011K000024bPvSQAU,0011K00002ITUx9QAH,Existing Customer,2026-11-30,Tier 3,"$69,050","$4,935",US,Yes,Yes,Yes,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,75%
+0011K000024bPvSQAU,0011K00002KXRNQQA5,Existing Customer,2026-11-30,Tier 3,"$123,868","$2,297",US,Yes,Yes,Yes,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,50%
+0011K000024bPvSQAU,0011K00002KXRkUQAX,Existing Customer,2026-11-30,Tier 4,"$47,087","$16,065",US,Yes,Yes,No,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,100%
+0011K000024bPvSQAU,0011K00002KXRptQAH,Existing Customer,2026-11-30,Tier 4,"$50,183","$4,823",US,Yes,Yes,No,CS - Enterprise Plus,CSM-008,Expansion AM/AD,AM - Enterprise,AM-001,0%
+0011K000024bXPSQA2,0011K00002L5wQEQAZ,Existing Customer,2026-10-31,Tier 4,"$52,032","$79,665",CA,Yes,No,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,0%
+0011K000024bXPSQA2,0011K00002L5wRCQAZ,Existing Customer,2026-10-31,Tier 4,"$61,744","$94,943",CA,Yes,No,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,25%
+0011K000024bXPSQA2,0014100000Z9hd7AAB,Existing Customer,2026-10-31,Tier 3,"$88,614","$150,624",US,Yes,No,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,75%
+0011K000024bXPSQA2,0011K00002ITkK4QAL,Prospect,—,—,$0,"$160,088",US,No,No,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,75%
+0011K000024bXQLQA2,0011K000024bXQLQA2,Existing Customer,2026-09-30,Tier 4,"$36,845","$37,149",US,Yes,No,No,CS - Mid-Market,CSM-161,Expansion AM/AD,AM - MM,AM-019,100%
+0011K000024bXQLQA2,0011K00002ITcKJQA1,Existing Customer,2026-06-30,Tier 4,"$31,482","$19,119",US,Yes,No,No,CS - Mid-Market,CSM-161,Expansion AM/AD,AM - MM,AM-019,25%
+0011K000024eCe1QAE,0011K000024eCe1QAE,Existing Customer,2027-08-31,Tier 3,"$142,826","$18,140",US,Yes,Yes,Yes,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,75%
+0011K000024etcnQAA,0011K000024etcnQAA,Existing Customer,2026-05-31,Tier 2,"$251,113","$123,551",US,Yes,No,Yes,Partnerships,CSM-113,Expansion AM/AD,AM - MM,AM-019,50%
+0011K00002DedG6QAJ,0011K00002DedG6QAJ,Existing Customer,2027-11-30,Tier 4,"$47,259","$30,341",US,Yes,Yes,No,CS - Mid-Market,CSM-161,Expansion AM/AD,AM - MM,AM-019,75%
+0011K00002ETqlaQAD,0011K00002ETqlaQAD,Existing Customer,2027-07-31,Tier 2,"$219,307","$223,080",US,Yes,No,Yes,CS - Enterprise,CSM-122,New Business AE,—,AE-018,—
+0011K00002ETqlaQAD,001Jx00001ECpChIAL,Existing Customer,2027-09-30,Tier 4,"$20,479","$28,954",GB,Yes,No,No,CS - Enterprise,CSM-122,Expansion AM/AD,AM - Enterprise,AM-006,50%
+0011K00002F1aPdQAJ,0011K00002F1aPdQAJ,Existing Customer,2026-12-31,Tier 1,"$598,370","$260,100",US,Yes,Yes,Yes,CS - Enterprise,CSM-122,Expansion AM/AD,AM - Enterprise,AM-018,75%
+0011K00002F1aPdQAJ,0011K00002ITmkIQAT,Existing Customer,2026-12-31,Tier 3,"$147,000","$0",US,Yes,Yes,Yes,CS - Enterprise,CSM-122,Expansion AM/AD,AM - Enterprise,AM-018,75%
+0011K00002G5xKTQAZ,0011K00002G5xKTQAZ,Existing Customer,2026-08-31,Tier 3,"$152,880","$142,785",US,Yes,Yes,No,CS - Enterprise,CSM-004,Expansion AM/AD,AM - Enterprise,AM-006,75%
+0011K00002H2yLMQAZ,0011K00002H2yLMQAZ,Existing Customer,2027-01-31,Tier 2,"$325,000","$85,000",US,Yes,Yes,Yes,CS - Strategic,CSM-200,Expansion AM/AD,AD - Strategic,AM-030,100%
+0011K00002H2yLMQAZ,0011K00002H2yLNQAZ,Existing Customer,2027-01-31,Tier 3,"$180,000","$45,000",CA,Yes,Yes,No,CS - Strategic,CSM-200,Expansion AM/AD,AD - Strategic,AM-030,75%
+0011K00002J3zMMQAZ,0011K00002J3zMMQAZ,Existing Customer,2026-07-31,Tier 4,"$42,500","$55,000",US,Yes,No,No,CS - SMB,CSM-170,Expansion AM/AD,AM - SMB,AM-040,50%
+0011K00002J3zMNQAZ,0011K00002J3zMNQAZ,Existing Customer,2026-09-30,Tier 4,"$38,200","$28,000",US,Yes,No,No,CS - SMB,CSM-170,Expansion AM/AD,AM - SMB,AM-040,25%
+0011K00002K4aNNQAZ,0011K00002K4aNNQAZ,Existing Customer,2026-06-30,Tier 3,"$125,000","$95,000",GB,Yes,Yes,No,CS - International,CSM-180,Expansion AM/AD,AM - International,AM-050,75%
+0011K00002K4aNOQAZ,0011K00002K4aNOQAZ,Existing Customer,2027-02-28,Tier 3,"$110,000","$80,000",DE,Yes,No,Yes,CS - International,CSM-180,Expansion AM/AD,AM - International,AM-050,50%
+0011K00002L5bOOQAZ,0011K00002L5bOOQAZ,Existing Customer,2026-08-31,Tier 4,"$55,000","$35,000",US,Yes,No,No,CS - New Verticals,CSM-190,Expansion AM/AD,AM - MM,AM-019,100%
