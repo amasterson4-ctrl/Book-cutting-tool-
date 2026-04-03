@@ -199,6 +199,55 @@ main {
 .segment-rule h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
 .rule-desc { font-size: 0.75rem; color: var(--gray-500); margin-bottom: 12px; }
 
+/* CSM:AM Ratio Slider */
+.ratio-control {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.ratio-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.ratio-value {
+    background: var(--primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+
+.ratio-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ratio-slider-wrap .ratio-end {
+    font-size: 0.65rem;
+    color: var(--gray-400);
+    white-space: nowrap;
+    min-width: 55px;
+}
+
+.ratio-slider-wrap .ratio-end:last-child { text-align: right; }
+
+.ratio-slider { flex: 1; }
+
+.ratio-hint {
+    font-size: 0.7rem;
+    color: var(--gray-400);
+    margin-top: 6px;
+}
+
 .segment-rule label {
     display: block;
     font-size: 0.8rem;

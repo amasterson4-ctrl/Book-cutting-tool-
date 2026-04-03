@@ -132,6 +132,35 @@ function showUploadError(msg) {
     slider.addEventListener('input', () => { valEl.textContent = slider.value; });
 });
 
+// ---------- CSM:AM RATIO SLIDERS ----------
+// Slider value 1-9: 1=3:1 CSM:AM, 5=1:1, 9=1:3 AM:CSM
+const RATIO_MAP = {
+    1: '3 : 1', 2: '2.5 : 1', 3: '2 : 1', 4: '1.5 : 1',
+    5: '1 : 1',
+    6: '1 : 1.5', 7: '1 : 2', 8: '1 : 2.5', 9: '1 : 3'
+};
+const RATIO_NUMERIC = {
+    1: 3, 2: 2.5, 3: 2, 4: 1.5, 5: 1, 6: 1/1.5, 7: 0.5, 8: 1/2.5, 9: 1/3
+};
+
+function setupRatioSlider(prefix) {
+    const slider = document.getElementById(`${prefix}-ratio`);
+    const valEl = document.getElementById(`${prefix}-ratio-val`);
+    if (!slider || !valEl) return;
+    const update = () => { valEl.textContent = RATIO_MAP[slider.value] || '1 : 1'; };
+    slider.addEventListener('input', update);
+    update();
+}
+setupRatioSlider('ent');
+setupRatioSlider('mm');
+
+function getRatios() {
+    return {
+        ent: RATIO_NUMERIC[+document.getElementById('ent-ratio').value] || 1,
+        mm: RATIO_NUMERIC[+document.getElementById('mm-ratio').value] || 1,
+    };
+}
+
 function getWeights() {
     return {
         arr: +document.getElementById('w-arr').value / 100,
@@ -553,6 +582,7 @@ document.getElementById('rebalance-btn').addEventListener('click', runRebalance)
 function runRebalance() {
     const weights = getWeights();
     const targets = getBookSizeTargets();
+    const ratios = getRatios();
     const accounts = parsedAccounts.map(a => ({ ...a })); // shallow copy
 
     // Step 1: Build parent groups (must stay together)
@@ -622,13 +652,22 @@ function runRebalance() {
     const intlAms = [...new Set(parsedAccounts.filter(a => a.amSegment === INTL_AM_SEGMENT && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
 
     // Step 4: Balance assignment using weighted scoring
-    function assignUnitsToOwners(unitList, ownerIds, role) {
+    // csmAmRatio: CSM:AM ratio for this segment (e.g. 2 means 2 CSMs per 1 AM)
+    // Used to scale target capacity: CSMs get fewer accounts when ratio > 1, AMs get fewer when ratio < 1
+    function assignUnitsToOwners(unitList, ownerIds, role, csmAmRatio) {
         if (ownerIds.length === 0 || unitList.length === 0) return;
+
+        // Compute capacity multiplier from ratio
+        // ratio > 1 means more CSMs per AM → each CSM handles fewer accounts
+        // ratio < 1 means more AMs per CSM → each AM handles fewer accounts
+        const capacityMultiplier = role === 'CSM'
+            ? 1 / Math.max(csmAmRatio, 0.33)  // Higher ratio → smaller CSM books
+            : Math.max(csmAmRatio, 0.33);       // Higher ratio → larger AM books
 
         // Initialize buckets
         const buckets = {};
         ownerIds.forEach(id => {
-            buckets[id] = { id, units: [], totalArr: 0, totalWhitespace: 0, healthSum: 0, healthCount: 0, renewalMonths: {}, adoptionSum: 0, count: 0, intlCount: 0 };
+            buckets[id] = { id, units: [], totalArr: 0, totalWhitespace: 0, healthSum: 0, healthCount: 0, renewalMonths: {}, adoptionSum: 0, count: 0, intlCount: 0, capacityMultiplier };
         });
 
         // Sort units: largest ARR first (greedy bin-packing)
@@ -642,6 +681,10 @@ function runRebalance() {
             ownerIds.forEach(ownerId => {
                 const bucket = buckets[ownerId];
                 let score = 0;
+
+                // Capacity from CSM:AM ratio — scale count penalty by multiplier
+                const adjustedCount = bucket.count * (1 / bucket.capacityMultiplier);
+                score += adjustedCount * 5000; // soft pressure to respect ratio-based capacity
 
                 // ARR balance: prefer bucket with lowest ARR
                 const arrAfter = bucket.totalArr + unit.totalArr;
@@ -718,16 +761,16 @@ function runRebalance() {
         return buckets;
     }
 
-    // Run CSM assignment per segment
-    const csmEntBuckets = assignUnitsToOwners(entUnits, entCsms, 'CSM');
-    const csmMmBuckets = assignUnitsToOwners(mmUnits, mmCsms, 'CSM');
-    const csmIntlBuckets = assignUnitsToOwners(intlUnits, intlCsms.length ? intlCsms : entCsms, 'CSM');
-    const csmOtherBuckets = assignUnitsToOwners(otherUnits, otherCsms.length ? otherCsms : mmCsms, 'CSM');
+    // Run CSM assignment per segment (pass CSM:AM ratio)
+    const csmEntBuckets = assignUnitsToOwners(entUnits, entCsms, 'CSM', ratios.ent);
+    const csmMmBuckets = assignUnitsToOwners(mmUnits, mmCsms, 'CSM', ratios.mm);
+    const csmIntlBuckets = assignUnitsToOwners(intlUnits, intlCsms.length ? intlCsms : entCsms, 'CSM', 1);
+    const csmOtherBuckets = assignUnitsToOwners(otherUnits, otherCsms.length ? otherCsms : mmCsms, 'CSM', ratios.mm);
 
-    // Run AM assignment per segment
-    const amEntBuckets = assignUnitsToOwners(entUnits, entAms, 'AM');
-    const amMmBuckets = assignUnitsToOwners(mmUnits, mmAms, 'AM');
-    const amIntlBuckets = assignUnitsToOwners(intlUnits, intlAms.length ? intlAms : entAms, 'AM');
+    // Run AM assignment per segment (pass CSM:AM ratio)
+    const amEntBuckets = assignUnitsToOwners(entUnits, entAms, 'AM', ratios.ent);
+    const amMmBuckets = assignUnitsToOwners(mmUnits, mmAms, 'AM', ratios.mm);
+    const amIntlBuckets = assignUnitsToOwners(intlUnits, intlAms.length ? intlAms : entAms, 'AM', 1);
 
     // For accounts with New Business AE or Unassigned, keep as-is
     accounts.forEach(a => {
