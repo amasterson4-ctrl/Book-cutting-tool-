@@ -133,14 +133,14 @@ function showUploadError(msg) {
 });
 
 // ---------- CSM:AM RATIO SLIDERS ----------
-// Slider value 1-9: 1=3:1 CSM:AM, 5=1:1, 9=1:3 AM:CSM
+// Slider value 1-5: 1=3:1 CSM:AM, 3=1:1, 5=1:3 AM:CSM
 const RATIO_MAP = {
-    1: '3 : 1', 2: '2.5 : 1', 3: '2 : 1', 4: '1.5 : 1',
-    5: '1 : 1',
-    6: '1 : 1.5', 7: '1 : 2', 8: '1 : 2.5', 9: '1 : 3'
+    1: '3 : 1', 2: '2 : 1',
+    3: '1 : 1',
+    4: '1 : 2', 5: '1 : 3'
 };
 const RATIO_NUMERIC = {
-    1: 3, 2: 2.5, 3: 2, 4: 1.5, 5: 1, 6: 1/1.5, 7: 0.5, 8: 1/2.5, 9: 1/3
+    1: 3, 2: 2, 3: 1, 4: 0.5, 5: 1/3
 };
 
 function setupRatioSlider(prefix) {
@@ -1052,9 +1052,15 @@ document.getElementById('export-changes-btn').addEventListener('click', exportCh
 document.getElementById('export-pods-btn').addEventListener('click', exportPodsCSV);
 
 function buildExportRow(a) {
+    const csmChanged = !!(a.newCsmId && a.newCsmId !== a.csmId);
+    const amChanged = !!(a.newSalesOwnerId && a.newSalesOwnerId !== a.salesOwnerId && a.salesOwnerType === 'Expansion AM/AD');
+    const csSegChanged = !!(a.newCsSegment && a.newCsSegment !== a.csSegment);
+    const amSegChanged = !!(a.newAmSegment && a.newAmSegment !== a.amSegment);
+
     return {
-        'Account ID': a.accountId,
+        // Original columns preserved in input format
         'Parent Account ID': a.parentAccountId,
+        'Account ID': a.accountId,
         'Account Type': a.accountType,
         'Renewal Date': a.renewalDate ? a.renewalDate.toISOString().slice(0, 10) : '',
         'Customer Tier': a.customerTier,
@@ -1064,19 +1070,26 @@ function buildExportRow(a) {
         'Uses SMS': a.products.includes('SMS') ? 'Yes' : 'No',
         'Uses Email': a.products.includes('Email') ? 'Yes' : 'No',
         'Uses AI': a.products.includes('AI') ? 'Yes' : 'No',
-        'Product Adoption Depth': a.adoptionDepth,
+        'CS Segment': a.csSegment,
+        'CSM ID': a.csmId,
+        'Sales Owner Type': a.salesOwnerType,
+        'Account Management Segment': a.amSegment,
+        'Sales Owner ID': a.salesOwnerId,
         'Health Score': a.healthScore !== null ? Math.round(a.healthScore * 100) + '%' : '',
-        'OLD CS Segment': a.csSegment,
-        'OLD CSM ID': a.csmId,
+        // New assignment columns
         'NEW CS Segment': a.newCsSegment || a.csSegment,
         'NEW CSM ID': a.newCsmId || a.csmId,
-        'CSM Changed': (a.newCsmId && a.newCsmId !== a.csmId) ? 'Yes' : 'No',
-        'Sales Owner Type': a.salesOwnerType,
-        'OLD AM Segment': a.amSegment,
-        'OLD Sales Owner ID': a.salesOwnerId,
         'NEW AM Segment': a.newAmSegment || a.amSegment,
         'NEW Sales Owner ID': a.newSalesOwnerId || a.salesOwnerId,
-        'AM Changed': (a.newSalesOwnerId && a.newSalesOwnerId !== a.salesOwnerId && a.salesOwnerType === 'Expansion AM/AD') ? 'Yes' : 'No',
+        // Change tracking columns
+        'CSM Changed': csmChanged ? 'Yes' : 'No',
+        'OLD CSM ID': csmChanged ? a.csmId : '',
+        'AM Changed': amChanged ? 'Yes' : 'No',
+        'OLD Sales Owner ID': amChanged ? a.salesOwnerId : '',
+        'CS Segment Changed': csSegChanged ? 'Yes' : 'No',
+        'OLD CS Segment': csSegChanged ? a.csSegment : '',
+        'AM Segment Changed': amSegChanged ? 'Yes' : 'No',
+        'OLD AM Segment': amSegChanged ? a.amSegment : '',
     };
 }
 
