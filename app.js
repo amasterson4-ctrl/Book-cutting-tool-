@@ -199,6 +199,21 @@ function filterByScope(accounts) {
     );
 }
 
+// Re-run analysis when scope or grouping changes (if data is loaded)
+document.getElementById('segment-scope').addEventListener('change', () => {
+    if (parsedAccounts.length > 0) {
+        // Hide previous results since scope changed
+        document.getElementById('results-section').classList.add('hidden');
+        runAnalysis();
+    }
+});
+document.getElementById('grouping-mode').addEventListener('change', () => {
+    if (parsedAccounts.length > 0) {
+        document.getElementById('results-section').classList.add('hidden');
+        runAnalysis();
+    }
+});
+
 // ---------- TABS ----------
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -615,6 +630,10 @@ function runRebalance() {
     const groupingMode = getGroupingMode();
     const scopedSource = filterByScope(parsedAccounts);
     const accounts = scopedSource.map(a => ({ ...a })); // shallow copy
+
+    // Re-run analysis on current scope to ensure before/after comparison is accurate
+    analysisResult = analyzeBooks(scopedSource);
+    renderAnalysis(analysisResult);
 
     // In parent-child mode, boost parent weight dramatically
     if (groupingMode === 'parent-child') {
