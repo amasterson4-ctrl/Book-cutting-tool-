@@ -182,6 +182,23 @@ function getBookSizeTargets() {
     };
 }
 
+// ---------- SCOPE CONTROLS ----------
+function getSegmentScope() {
+    return document.getElementById('segment-scope').value; // 'both', 'enterprise', 'mm_smb'
+}
+
+function getGroupingMode() {
+    return document.getElementById('grouping-mode').value; // 'standard', 'parent-child'
+}
+
+function filterByScope(accounts) {
+    const scope = getSegmentScope();
+    if (scope === 'both') return accounts;
+    return accounts.filter(a => a.segmentGroup === scope ||
+        (scope === 'enterprise' && a.segmentGroup === 'international') // intl rolls into enterprise
+    );
+}
+
 // ---------- TABS ----------
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -197,7 +214,8 @@ document.querySelectorAll('.tab').forEach(tab => {
 document.getElementById('rebalance-btn').addEventListener('click', runRebalance);
 
 function runAnalysis() {
-    analysisResult = analyzeBooks(parsedAccounts);
+    const scoped = filterByScope(parsedAccounts);
+    analysisResult = analyzeBooks(scoped);
     renderAnalysis(analysisResult);
     document.getElementById('analysis-section').classList.remove('hidden');
     document.getElementById('analysis-section').scrollIntoView({ behavior: 'smooth' });
@@ -314,17 +332,28 @@ function cv(arr) {
     return stdDev(arr) / mean;
 }
 
+function getScopeLabel() {
+    const scope = getSegmentScope();
+    if (scope === 'enterprise') return 'Enterprise & Strategic';
+    if (scope === 'mm_smb') return 'Mid-Market & SMB';
+    return 'All Segments';
+}
+
 function renderAnalysis(result) {
     const { csmMetrics, amMetrics, parentChildSplits, segments } = result;
+    const scoped = filterByScope(parsedAccounts);
 
     // Overview metrics
-    const totalAccounts = parsedAccounts.length;
-    const totalArr = parsedAccounts.reduce((s, a) => s + a.arr, 0);
-    const totalWhitespace = parsedAccounts.reduce((s, a) => s + a.whitespace, 0);
+    const totalAccounts = scoped.length;
+    const totalArr = scoped.reduce((s, a) => s + a.arr, 0);
+    const totalWhitespace = scoped.reduce((s, a) => s + a.whitespace, 0);
     const csmArrValues = csmMetrics.map(b => b.totalArr);
     const amArrValues = amMetrics.map(b => b.totalArr);
 
+    const scopeLabel = getScopeLabel();
+    const groupLabel = getGroupingMode() === 'parent-child' ? ' | Parent-Child Priority' : '';
     const metricsHtml = `
+        <div class="metric-card scope-badge-card"><div class="metric-label">Scope</div><div class="metric-value scope-badge-value">${scopeLabel}${groupLabel}</div></div>
         <div class="metric-card"><div class="metric-label">Total Accounts</div><div class="metric-value">${totalAccounts}</div></div>
         <div class="metric-card"><div class="metric-label">Total ARR</div><div class="metric-value">${fmt$(totalArr)}</div></div>
         <div class="metric-card"><div class="metric-label">Total Whitespace</div><div class="metric-value">${fmt$(totalWhitespace)}</div></div>
@@ -583,7 +612,14 @@ function runRebalance() {
     const weights = getWeights();
     const targets = getBookSizeTargets();
     const ratios = getRatios();
-    const accounts = parsedAccounts.map(a => ({ ...a })); // shallow copy
+    const groupingMode = getGroupingMode();
+    const scopedSource = filterByScope(parsedAccounts);
+    const accounts = scopedSource.map(a => ({ ...a })); // shallow copy
+
+    // In parent-child mode, boost parent weight dramatically
+    if (groupingMode === 'parent-child') {
+        weights.parent = 1.0; // max out parent-child affinity
+    }
 
     // Step 1: Build parent groups (must stay together)
     const parentGroups = {};
@@ -641,15 +677,15 @@ function runRebalance() {
     const intlUnits = units.filter(u => u.segmentGroup === 'international');
     const otherUnits = units.filter(u => !['enterprise', 'mm_smb', 'international'].includes(u.segmentGroup));
 
-    // Get existing CSMs and AMs per segment
-    const entCsms = [...new Set(parsedAccounts.filter(a => ENT_CS_SEGMENTS.includes(a.csSegment)).map(a => a.csmId).filter(Boolean))];
-    const mmCsms = [...new Set(parsedAccounts.filter(a => MM_CS_SEGMENTS.includes(a.csSegment)).map(a => a.csmId).filter(Boolean))];
-    const intlCsms = [...new Set(parsedAccounts.filter(a => a.csSegment === INTL_CS_SEGMENT).map(a => a.csmId).filter(Boolean))];
-    const otherCsms = [...new Set(parsedAccounts.filter(a => a.csSegment === PARTNERSHIPS_SEGMENT).map(a => a.csmId).filter(Boolean))];
+    // Get existing CSMs and AMs per segment (from scoped accounts)
+    const entCsms = [...new Set(accounts.filter(a => ENT_CS_SEGMENTS.includes(a.csSegment)).map(a => a.csmId).filter(Boolean))];
+    const mmCsms = [...new Set(accounts.filter(a => MM_CS_SEGMENTS.includes(a.csSegment)).map(a => a.csmId).filter(Boolean))];
+    const intlCsms = [...new Set(accounts.filter(a => a.csSegment === INTL_CS_SEGMENT).map(a => a.csmId).filter(Boolean))];
+    const otherCsms = [...new Set(accounts.filter(a => a.csSegment === PARTNERSHIPS_SEGMENT).map(a => a.csmId).filter(Boolean))];
 
-    const entAms = [...new Set(parsedAccounts.filter(a => ENT_AM_SEGMENTS.includes(a.amSegment) && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
-    const mmAms = [...new Set(parsedAccounts.filter(a => MM_AM_SEGMENTS.includes(a.amSegment) && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
-    const intlAms = [...new Set(parsedAccounts.filter(a => a.amSegment === INTL_AM_SEGMENT && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
+    const entAms = [...new Set(accounts.filter(a => ENT_AM_SEGMENTS.includes(a.amSegment) && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
+    const mmAms = [...new Set(accounts.filter(a => MM_AM_SEGMENTS.includes(a.amSegment) && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
+    const intlAms = [...new Set(accounts.filter(a => a.amSegment === INTL_AM_SEGMENT && a.salesOwnerType === 'Expansion AM/AD').map(a => a.salesOwnerId).filter(Boolean))];
 
     // Step 4: Balance assignment using weighted scoring
     // csmAmRatio: CSM:AM ratio for this segment (e.g. 2 means 2 CSMs per 1 AM)
@@ -851,6 +887,9 @@ function renderResults(result) {
     renderBeforeAfterChart('chart-before-after-health', 'CSM Health Distribution',
         beforeAnalysis.csmMetrics, afterAnalysis.csmMetrics, 'avgHealth', fmtPct);
 
+    // Pod mapping table
+    renderPodMapping(result);
+
     // Changes table
     renderChangesTable(result);
 }
@@ -886,6 +925,82 @@ function renderBeforeAfterChart(canvasId, title, beforeBooks, afterBooks, metric
             }
         }
     });
+}
+
+function renderPodMapping(result) {
+    const { accounts } = result;
+
+    // Build pod pairings from the rebalanced assignments
+    const pods = {};
+    accounts.forEach(a => {
+        const csm = a.newCsmId || a.csmId;
+        const am = (a.newSalesOwnerId || a.salesOwnerId);
+        if (!csm || !am || a.salesOwnerType !== 'Expansion AM/AD') return;
+
+        const key = `${csm}||${am}`;
+        if (!pods[key]) {
+            pods[key] = {
+                csm,
+                am,
+                segment: a.newCsSegment || a.csSegment,
+                amSegment: a.newAmSegment || a.amSegment,
+                sharedAccounts: 0,
+                totalArr: 0,
+                totalWhitespace: 0,
+                accountIds: [],
+            };
+        }
+        pods[key].sharedAccounts++;
+        pods[key].totalArr += a.arr;
+        pods[key].totalWhitespace += a.whitespace;
+        pods[key].accountIds.push(a.accountId);
+    });
+
+    const podList = Object.values(pods).sort((a, b) => b.totalArr - a.totalArr);
+
+    // Compute CSM:AM ratios per segment from the actual pairings
+    const segRatios = {};
+    podList.forEach(p => {
+        const seg = p.segment;
+        if (!segRatios[seg]) segRatios[seg] = { csms: new Set(), ams: new Set() };
+        segRatios[seg].csms.add(p.csm);
+        segRatios[seg].ams.add(p.am);
+    });
+
+    const ratioSummary = Object.entries(segRatios).map(([seg, r]) => {
+        const csmCount = r.csms.size;
+        const amCount = r.ams.size;
+        const ratio = amCount > 0 ? (csmCount / amCount).toFixed(1) : 'N/A';
+        return `<span class="pod-ratio-badge">${seg}: ${csmCount} CSMs / ${amCount} AMs = <strong>${ratio} : 1</strong></span>`;
+    }).join(' ');
+
+    const rows = podList.map(p => `
+        <tr>
+            <td>${p.csm}</td>
+            <td>${p.am}</td>
+            <td>${p.segment}</td>
+            <td>${p.amSegment}</td>
+            <td class="cell-num">${p.sharedAccounts}</td>
+            <td class="cell-num">${fmt$(p.totalArr)}</td>
+            <td class="cell-num">${fmt$(p.totalWhitespace)}</td>
+        </tr>
+    `).join('');
+
+    document.getElementById('pod-mapping-wrap').innerHTML = `
+        <div class="pod-section">
+            <h3 class="pod-title">CSM : AM Pod Mapping</h3>
+            <div class="pod-ratios">${ratioSummary}</div>
+            <div class="data-table-wrap" style="max-height:400px;overflow-y:auto;">
+                <table class="data-table">
+                    <thead><tr>
+                        <th>CSM</th><th>AM</th><th>CS Segment</th><th>AM Segment</th>
+                        <th>Shared Accounts</th><th>Combined ARR</th><th>Combined Whitespace</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
 }
 
 function renderChangesTable(result) {
@@ -934,6 +1049,7 @@ function renderChangesTable(result) {
 // ---------- CSV EXPORT ----------
 document.getElementById('export-full-btn').addEventListener('click', exportFullCSV);
 document.getElementById('export-changes-btn').addEventListener('click', exportChangesCSV);
+document.getElementById('export-pods-btn').addEventListener('click', exportPodsCSV);
 
 function buildExportRow(a) {
     return {
@@ -989,4 +1105,45 @@ function exportChangesCSV() {
     );
     const rows = changed.map(buildExportRow);
     downloadCSV(rows, `book_rebalance_changes_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+function exportPodsCSV() {
+    if (!rebalanceResult) return;
+    const { accounts } = rebalanceResult;
+
+    // Build pod pairings
+    const pods = {};
+    accounts.forEach(a => {
+        const csm = a.newCsmId || a.csmId;
+        const am = a.newSalesOwnerId || a.salesOwnerId;
+        if (!csm || !am || a.salesOwnerType !== 'Expansion AM/AD') return;
+        const key = `${csm}||${am}`;
+        if (!pods[key]) {
+            pods[key] = {
+                csm, am,
+                csSegment: a.newCsSegment || a.csSegment,
+                amSegment: a.newAmSegment || a.amSegment,
+                sharedAccounts: 0,
+                totalArr: 0,
+                totalWhitespace: 0,
+                accountIds: [],
+            };
+        }
+        pods[key].sharedAccounts++;
+        pods[key].totalArr += a.arr;
+        pods[key].totalWhitespace += a.whitespace;
+        pods[key].accountIds.push(a.accountId);
+    });
+
+    const rows = Object.values(pods).sort((a, b) => b.totalArr - a.totalArr).map(p => ({
+        'CSM ID': p.csm,
+        'AM ID': p.am,
+        'CS Segment': p.csSegment,
+        'AM Segment': p.amSegment,
+        'Shared Account Count': p.sharedAccounts,
+        'Combined ARR': p.totalArr,
+        'Combined Whitespace': p.totalWhitespace,
+        'Account IDs': p.accountIds.join('; '),
+    }));
+    downloadCSV(rows, `pod_mapping_${new Date().toISOString().slice(0, 10)}.csv`);
 }

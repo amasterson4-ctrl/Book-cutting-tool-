@@ -133,10 +133,38 @@
             </div>
         </section>
 
-        <!-- Step 2: Upload -->
-        <section id="upload-section" class="card">
+        <!-- Step 2: Scope Selection -->
+        <section id="scope-section" class="card">
             <div class="card-header">
                 <span class="step-badge">2</span>
+                <h2>Balancing Scope</h2>
+                <p class="card-desc">Choose which segment(s) to analyze and rebalance. Each segment can use different weight strategies.</p>
+            </div>
+            <div class="scope-controls">
+                <div class="scope-control">
+                    <label for="segment-scope">Segment Focus</label>
+                    <select id="segment-scope">
+                        <option value="both">Both Segments</option>
+                        <option value="enterprise">Enterprise & Strategic Only</option>
+                        <option value="mm_smb">Mid-Market & SMB Only</option>
+                    </select>
+                    <p class="scope-hint">Select a single segment to isolate its book cut — useful when ARR, whitespace, or renewal strategies differ between segments.</p>
+                </div>
+                <div class="scope-control">
+                    <label for="grouping-mode">Account Grouping</label>
+                    <select id="grouping-mode">
+                        <option value="standard">Standard (all indicators)</option>
+                        <option value="parent-child">Parent-Child Hierarchy First</option>
+                    </select>
+                    <p class="scope-hint">Parent-Child Hierarchy mode prioritizes keeping parent + child accounts together as the primary grouping, then balances other indicators within those groups.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Upload -->
+        <section id="upload-section" class="card">
+            <div class="card-header">
+                <span class="step-badge">3</span>
                 <h2>Upload Account Data</h2>
             </div>
             <div class="upload-zone" id="drop-zone">
@@ -152,10 +180,10 @@
             </div>
         </section>
 
-        <!-- Step 3: Current State Analysis -->
+        <!-- Step 4: Current State Analysis -->
         <section id="analysis-section" class="card hidden">
             <div class="card-header">
-                <span class="step-badge">3</span>
+                <span class="step-badge">4</span>
                 <h2>Current State Analysis</h2>
             </div>
             <div class="tabs">
@@ -195,10 +223,10 @@
             <button id="rebalance-btn" class="btn-primary">Run Rebalancing Algorithm</button>
         </section>
 
-        <!-- Step 4: Proposed Changes -->
+        <!-- Step 5: Proposed Changes -->
         <section id="results-section" class="card hidden">
             <div class="card-header">
-                <span class="step-badge">4</span>
+                <span class="step-badge">5</span>
                 <h2>Proposed Rebalancing</h2>
             </div>
             <div class="results-summary" id="results-summary"></div>
@@ -206,10 +234,12 @@
                 <div class="chart-container"><canvas id="chart-before-after-arr"></canvas></div>
                 <div class="chart-container"><canvas id="chart-before-after-health"></canvas></div>
             </div>
+            <div id="pod-mapping-wrap"></div>
             <div id="changes-table-wrap"></div>
             <div class="export-controls">
                 <button id="export-full-btn" class="btn-primary">Export Full Roster CSV</button>
                 <button id="export-changes-btn" class="btn-secondary">Export Changes Only CSV</button>
+                <button id="export-pods-btn" class="btn-secondary">Export Pod Mapping CSV</button>
             </div>
         </section>
     </main>
